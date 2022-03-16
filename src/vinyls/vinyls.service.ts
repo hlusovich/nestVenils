@@ -1,46 +1,74 @@
-import {Injectable} from '@nestjs/common';
-import {VinylsRepository} from "./vinyls.repostitory";
-import {IVinylCreateDto, IVinylForRequest} from "./vinyls.interface";
-import {VinylDocument} from "../schemas/vinyls.schema";
-import {ReviewService} from "../reviews/review.service";
-import {ReviewDocument} from "../schemas/review.schema";
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { VinylsRepository } from './vinyls.repostitory';
+import { IVinylCreateDto, IVinylForRequest } from './vinyls.interface';
+import { VinylDocument } from '../schemas/vinyls.schema';
+import { ProfileService } from '../profile/profile.service';
+import { IReviewCreateDto } from '../reviews/review.interfaces';
+import { v4 } from 'uuid';
+import { ProfileForRequest } from '../profile/Profile.interface';
 
 @Injectable()
 export class VinylsService {
-    constructor(private vinylsRepository: VinylsRepository, private reviewService: ReviewService) {
+  constructor(
+    private vinylsRepository: VinylsRepository,
+    private profileService: ProfileService
+  ) {}
+
+  async saveVinyl(data: IVinylCreateDto): Promise<VinylDocument> {
+    const vinyl: VinylDocument = await this.vinylsRepository.saveVinyl(data);
+    return vinyl;
+  }
+
+  async getAllVinyls(): Promise<VinylDocument[]> {
+    const vinyls: VinylDocument[] = await this.vinylsRepository.getAllVinyls();
+    return vinyls;
+  }
+
+  async getVinylById(id: string): Promise<VinylDocument> {
+    const vinyl: VinylDocument | null =
+      await this.vinylsRepository.getVinylById(id);
+    if (!vinyl) {
+      throw new BadRequestException("this vinyl doesn't exist");
     }
+    return vinyl;
+  }
 
-    async saveVinyl(data: IVinylCreateDto): Promise<VinylDocument> {
-        const vinyl: VinylDocument = await this.vinylsRepository.saveVinyl(data);
-        return vinyl;
-    }
+  async addVinylsReview(
+    vinylId: string,
+    userId: string,
+    review: IReviewCreateDto
+  ): Promise<VinylDocument> {
+    await this.getVinylById(vinylId);
+    const reviewId: string = v4();
+    await this.vinylsRepository.addVinylsReview(vinylId, {
+      ...review,
+      id: reviewId,
+      vinylId,
+      userId,
+    });
+    await this.profileService.addReview({
+      ...review,
+      id: reviewId,
+      vinylId,
+      userId,
+    });
+    const vinyl: VinylDocument = await this.getVinylById(vinylId);
+    return vinyl;
+  }
 
-    async getAllVinyls(): Promise<IVinylForRequest[]> {
-        const vinyls: VinylDocument[] = await this.vinylsRepository.getAllVinyls();
-        const vinylForRequest = [];
-        for (let i = 0; i < vinyls.length; i++) {
-            const vinyl: IVinylForRequest = await this.getVinylForRequest(vinyls[i]);
-            vinylForRequest.push(vinyl);
-        }
-        return vinylForRequest;
-    }
-
-    async getVinylForRequest(vinyl: VinylDocument): Promise<IVinylForRequest> {
-        const reviews: ReviewDocument[] = await this.reviewService.getAllVinylReviews(vinyl.id);
-        return {
-            price: vinyl.price,
-            name: vinyl.name,
-            author: vinyl.author,
-            description: vinyl.description, reviews
-        };
-
-    }
-
-    async getVinylById(id: string): Promise<IVinylForRequest> {
-        const vinyl: VinylDocument | undefined = await this.vinylsRepository.getVinylById(id);
-        const vinylForRequest: IVinylForRequest = await this.getVinylForRequest(vinyl);
-        console.log(vinylForRequest)
-        return vinylForRequest;
-    }
-
+  async addBoughtVynil(
+    profileId: string,
+    vinylId: string
+  ): Promise<ProfileForRequest> {
+    await this.profileService.getProfileById(profileId);
+    const vinyl: VinylDocument = await this.getVinylById(vinylId);
+    await this.profileService.buyVynil(profileId, {
+      id: vinylId,
+      name: vinyl.name,
+    });
+    const profile: ProfileForRequest = await this.profileService.getProfileById(
+      profileId
+    );
+    return profile;
+  }
 }

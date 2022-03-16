@@ -1,26 +1,29 @@
-import {Controller, Get, Req, UseGuards} from '@nestjs/common';
-import {JwtService} from "@nestjs/jwt";
-import {AuthGuard} from '@nestjs/passport';
-import {ProfileService} from "../profile/profile.service";
-import {ProfileDocument} from "../schemas/profile.schema";
-
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { AuthGuard } from '@nestjs/passport';
+import { Token } from '../authointefication/auth.interface';
+import { AuthService } from '../authointefication/auth.service';
+import {
+  IProfileCreateDtoWithSSO,
+  IRequestUserWithSSO,
+} from '../profile/Profile.interface';
 @Controller()
 export class GoogleController {
-    constructor(private jwtService: JwtService, private profileService:ProfileService) {
-    }
+  constructor(
+    private jwtService: JwtService,
+    private authService: AuthService
+  ) {}
 
-    @Get()
-    @UseGuards(AuthGuard('google'))
-    async googleAuth(@Req() req) {
-    }
-
-    @Get('auth/google/callback')
-    @UseGuards(AuthGuard('google'))
-    async googleAuthRedirect(@Req() req) {
-        const profile:ProfileDocument = await this.profileService.getProfileByEmail(req.user.email);
-        if(profile){
-            return this.jwtService.sign({email: req.user.email})
-        }
-
-    }
+  @Get('auth/google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req: IRequestUserWithSSO): Promise<Token> {
+    const profile: IProfileCreateDtoWithSSO = {
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      avatar: req.user.picture,
+      email: req.user.email,
+    };
+    const token: Token = await this.authService.registerWithSSO(profile);
+    return token;
+  }
 }

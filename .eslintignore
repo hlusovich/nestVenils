@@ -1,0 +1,7 @@
+test/
+.github/
+node_modules/
+PostgressDocker/
+build/
+doc/
+migration/

@@ -1,5 +1,4 @@
 export interface IBoughtedVinyl {
-    name:string,
-    userId:string
-
+  name: string;
+  id: string;
 }

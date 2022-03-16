@@ -1,18 +1,17 @@
-import {IProfileCreateDtoForUpdate} from "../Profile.interface";
-import {IsOptional, IsString, Validate} from "class-validator";
-import {CustomDateValidator} from "../../validators/dateValidator";
+import { IProfileCreateDtoForUpdate } from '../Profile.interface';
+import { IsOptional, IsString, Validate } from 'class-validator';
+import { CustomDateValidator } from '../../validators/dateValidator';
 
 export class ProfileUpdateDto implements IProfileCreateDtoForUpdate {
-    @IsOptional()
-    @IsString()
-    firstName?: string;
+  @IsOptional()
+  @IsString()
+  firstName?: string;
 
-    @IsOptional()
-    @IsString()
-    lastName?: string;
+  @IsOptional()
+  @IsString()
+  lastName?: string;
 
-    @IsOptional()
-    @Validate(CustomDateValidator)
-    birthDate:string;
-
+  @IsOptional()
+  @Validate(CustomDateValidator)
+  birthDate: string;
 }

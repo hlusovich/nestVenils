@@ -1,12 +1,12 @@
 export interface IReview {
-    comment: string;
-    vinylScore: string;
-    userId: string;
-    vinylId: string;
-
+  id: string;
+  comment: string;
+  vinylScore: string;
+  userId: string;
+  vinylId: string;
 }
 
 export interface IReviewCreateDto {
-    comment: string;
-    vinylScore: string;
+  comment: string;
+  vinylScore: string;
 }
