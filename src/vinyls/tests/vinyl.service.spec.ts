@@ -107,5 +107,9 @@ describe("ProfileService", () => {
             expect(e.status).toBe(400);
         }
     });
+    it("VinylService should return vinyl by id", async () => {
+        const profile: ProfileForRequest = await vinylService.addBoughtVynil(testProfile1.id, testVinyl1.id);
+        expect(profile.boughtedVinyls.find(vinyl=> vinyl.id=== testVinyl1.id)?.name).toBe(testVinyl1.name);
+    });
 });
 

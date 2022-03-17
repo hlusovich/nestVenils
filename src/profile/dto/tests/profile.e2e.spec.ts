@@ -19,7 +19,6 @@ describe('Vinyls', () => {
             return {email, id: "testId"}
         }, getAllProfiles: () => {
             return ["all profiles"]
-
         },
         getProfileById: (id:string) => {
             return {email, id, buffer:""}

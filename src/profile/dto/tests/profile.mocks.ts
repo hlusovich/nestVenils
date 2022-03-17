@@ -30,6 +30,7 @@ export let profiles:IProfile[] = [];
 export function removeProfiles() {
     profiles = [];
 };
+
 export const mockProfileReporistory
     = {
     getAllProfiles: jest.fn((): IProfile[] => {
@@ -70,6 +71,5 @@ export const mockProfileReporistory
         if (profile) {
             profile?.boughtedVinyls.push(boughtVinyl)
         }
-
     }),
 };

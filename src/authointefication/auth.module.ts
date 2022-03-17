@@ -6,7 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { JwtModuleConfigAsync } from './jwtAsyncConfig';
 import { ProfileModule } from '../Profile/profile.module';
-import { RoleGuard } from '../guards/RoleGuard';
+
 
 @Module({
   imports: [

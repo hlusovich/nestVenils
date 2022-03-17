@@ -17,10 +17,11 @@ import {RoleGuard} from "../../guards/RoleGuard";
 import {IReviewCreateDto} from "../../reviews/review.interfaces";
 import {IsString} from "class-validator";
 import * as dotenv from "dotenv"
-import {mockProfileReporistory} from "../../profile/dto/tests/profile.mocks";
+
 import {NotificationService} from "../../notification/notification.service";
 import {MailerModule, MailerService} from "@nestjs-modules/mailer";
 import {mailerConfig} from "../../mailerConfig";
+import {mockNotificationService} from "../../notification/tests/notifications.mock";
 
 describe('Vinyls', () => {
     dotenv.config();
@@ -37,13 +38,9 @@ describe('Vinyls', () => {
             return id;
         },
     };
-    let configService = {
+    const configService = {
         get: jest.fn(() => {
             return process.env.STRIPE_KEY
-        })
-    };
-    let notificationService = {
-        sentNotification: jest.fn(() => {
         })
     };
     let profileService = {
@@ -74,7 +71,7 @@ describe('Vinyls', () => {
             .overrideGuard(ConfigService)
             .useValue(configService)
             .overrideGuard(NotificationService)
-            .useValue(notificationService)
+            .useValue(mockNotificationService)
             .compile();
         app = moduleRef.createNestApplication();
         await app.init();
@@ -183,7 +180,6 @@ describe('Vinyls', () => {
             .expect(201).expect(
                 profileService.buyVynil(profileService.getProfileByEmail(email).id)
             );
-        expect(notificationService.sentNotification).toHaveBeenCalledTimes(1);
     }, 60000);
 
     afterAll(async () => {
