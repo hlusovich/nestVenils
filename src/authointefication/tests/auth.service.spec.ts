@@ -6,7 +6,7 @@ import {
     removeProfiles,
     testProfile1,
     testProfile2
-} from "../../profile/dto/tests/profile.mocks";
+} from "../../profile/tests/profile.mocks";
 import {ProfileRepository} from "../../profile/profile.repostitory";
 import {AuthService} from "../auth.service";
 import {JwtModule, JwtService} from '@nestjs/jwt';
@@ -15,8 +15,10 @@ import {ProfileDocument} from "../../schemas/profile.schema";
 import {Role} from "../../models/role.enum";
 import {IProfileCreateDto, IProfileCreateDtoWithSSO, ProfileForRequest} from "../../profile/Profile.interface";
 import {Token} from "../auth.interface";
+import {INestApplication} from "@nestjs/common";
 
 describe("AuthService", () => {
+    let app: INestApplication;
     let service: AuthService;
     const tokenService = {
         sign(payload: { email: string, role: Role }) {
@@ -53,14 +55,24 @@ describe("AuthService", () => {
         }).overrideProvider(ProfileRepository).useValue(mockProfileReporistory)
             .overrideProvider(JwtService).useValue(tokenService).compile();
         service = module.get<AuthService>(AuthService);
+        app = module.createNestApplication();
+        await app.init();
     });
     it("AuthService should be defined", () => {
         expect(service).toBeDefined()
     });
-    it("AuthService should return all vinyls", async () => {
+    it("AuthService should login user", async () => {
         const token: Token = await service.login(loginData as unknown as ProfileDocument);
         expect(token.access_token).toEqual(tokenService.sign(loginData));
 
+    });
+    it("AuthService should throw error if  user has already exsisted", async () => {
+        try {
+            const token: Token = await service.login(loginData as unknown as ProfileDocument);
+        } catch (e) {
+            // @ts-ignore
+            expect(e.status).toBe(400);
+        }
     });
     it("AuthService should register user if he doesn't exist", async () => {
         const profile: ProfileForRequest = await service.register(profileCreateDto);
@@ -69,7 +81,7 @@ describe("AuthService", () => {
         expect(profile.firstName).not.toHaveProperty("password");
         expect(mockProfileReporistory.saveProfile).toHaveBeenCalledTimes(1);
     });
-    it("AuthService should return Error  he user exists", async () => {
+    it("AuthService should return Error  if user exists", async () => {
         try {
             await service.register(profileCreateDto);
         } catch (e) {
@@ -78,15 +90,17 @@ describe("AuthService", () => {
         }
     });
     it("AuthService should register user wit sso if he doesn't exist", async () => {
-        const token: Token = await service.registerWithSSO (profileCreateDtoWirtSSo);
-        expect(token.access_token).toEqual(tokenService.sign({email:profileCreateDtoWirtSSo.email, role:Role.USER}));
+        const token: Token = await service.registerWithSSO(profileCreateDtoWirtSSo);
+        expect(token.access_token).toEqual(tokenService.sign({email: profileCreateDtoWirtSSo.email, role: Role.USER}));
         expect(mockProfileReporistory.saveProfile).toHaveBeenCalledTimes(2);
     });
     it("AuthService should register user if he  exists", async () => {
-        const token: Token = await service.registerWithSSO ({...profileCreateDtoWirtSSo, email:testProfile1.email});
-        expect(token.access_token).toEqual(tokenService.sign({email:testProfile1.email, role:Role.USER}));
+        const token: Token = await service.registerWithSSO({...profileCreateDtoWirtSSo, email: testProfile1.email});
+        expect(token.access_token).toEqual(tokenService.sign({email: testProfile1.email, role: Role.USER}));
         expect(mockProfileReporistory.saveProfile).toHaveBeenCalledTimes(2);
     });
-
+    afterAll(async () => {
+        await app.close();
+    });
 });
 

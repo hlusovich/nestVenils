@@ -38,4 +38,7 @@ export class VinylsRepository {
             await this.vinylsModel.updateOne({id}, {reviews});
         }
     }
+    async deleteVinyl(id:string): Promise<void>{
+        await this.vinylsModel.deleteOne({id});
+    }
 }

@@ -1,11 +1,11 @@
 import {Test, TestingModule} from "@nestjs/testing";
-import {ProfileService} from "../../profile.service";
+import {ProfileService} from "../profile.service";
 import {v4} from "uuid";
-import {IProfileCreateDtoForUpdate, ProfileForRequest} from "../../Profile.interface";
-import {ProfileDocument} from "../../../schemas/profile.schema";
-import {ProfileRepository} from "../../profile.repostitory";
-import {IReview} from "../../../reviews/review.interfaces";
-import {IBoughtedVinyl} from "../../../boughtedVinyls/boughtedVinyl.interfaces";
+import {IProfileCreateDtoForUpdate, ProfileForRequest} from "../Profile.interface";
+import {ProfileDocument} from "../../schemas/profile.schema";
+import {ProfileRepository} from "../profile.repostitory";
+import {IReview} from "../../reviews/review.interfaces";
+import {IBoughtedVinyl} from "../../boughtedVinyls/boughtedVinyl.interfaces";
 import {mockProfileReporistory, profiles, removeProfiles, testProfile1, testProfile2} from "./profile.mocks";
 
 
@@ -75,6 +75,29 @@ describe("ProfileService", () => {
         const profile: ProfileForRequest | void = await service.updateProfile(testProfile2.id, profileForUpdate, testProfile2.email);
         expect(profile?.firstName).toBe(profileForUpdate.firstName);
         expect(profile).not.toHaveProperty("password")
+    });
+    it("ProfileService should throw error if emails aren't equals", async () => {
+        try{
+            const profileForUpdate: IProfileCreateDtoForUpdate = {
+                firstName: "NewName"
+            };
+            await service.updateProfile(testProfile2.id, profileForUpdate, testProfile1.email);}
+        catch (e) {
+            // @ts-ignore
+            expect(e.status).toBe(401);
+        }
+    });
+    it("ProfileService should throw error if profile doesn't exist", async () => {
+        const incorrectId = v4();
+        try{
+            const profileForUpdate: IProfileCreateDtoForUpdate = {
+                firstName: "NewName"
+            };
+            await service.updateProfile(incorrectId, profileForUpdate, testProfile1.email);}
+        catch (e) {
+            // @ts-ignore
+            expect(e.status).toBe(400);
+        }
     });
     it("ProfileService should add review", async () => {
         const review: IReview = {

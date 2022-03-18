@@ -95,9 +95,6 @@ export class ProfileService implements IProfileService {
         avatar?: Buffer
     ): Promise<ProfileForRequest | void> {
         const oldProfileDate: ProfileForRequest = await this.getProfileById(id);
-        if (!oldProfileDate) {
-            throw new BadRequestException("this user doesn't exist");
-        }
         if (email !== oldProfileDate.email) {
             throw new UnauthorizedException('Invalid token');
         }

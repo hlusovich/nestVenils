@@ -1,6 +1,5 @@
 import {VinylsService} from './vinyls.service';
 import {
-    BadRequestException,
     Body,
     Controller,
     Get,
@@ -22,7 +21,6 @@ import {ParseJWTInterceptor} from '../interceptors/parseJWT.interceptor';
 import {JwtAuthGuard} from '../guards/jwt-auth.guard';
 import {IVinylForRequest} from './vinyls.interface';
 import {isTokenGuard} from '../guards/isTokenGuard';
-import Stripe from 'stripe';
 import {ProfileForRequest} from '../profile/Profile.interface';
 import {Roles} from "../decorators/role.decorator";
 import {Role} from "../models/role.enum";
@@ -30,8 +28,10 @@ import {RoleGuard} from "../guards/RoleGuard";
 import {ConfigService} from "@nestjs/config";
 import {PaymentCreateDto} from "./dto/paymentCreateDto";
 import {NotificationService} from "../notification/notification.service";
+import {buyWithStripe} from "../../utils/buyWithStripe";
+import {ApiResponse, ApiTags} from "@nestjs/swagger";
 
-
+@ApiTags("Vinyls")
 @Controller('api/vinyls/')
 export class VinylsController {
     constructor(
@@ -42,6 +42,8 @@ export class VinylsController {
     ) {
     }
 
+    @ApiResponse({status:200, description:"get all vinyls which can be " +
+            "sorted by price and filtered by author and name"})
     @Get()
     async getAll(
         @Query('price') price: boolean,
@@ -61,6 +63,8 @@ export class VinylsController {
         return vinyls;
     }
 
+    @ApiResponse({status:200, description:"get  vinyl by id"})
+    @ApiResponse({status:400, description:"if vinyl with this id doesn't exist"})
     @Get(':id')
     async getOne(@Param('id') id: string): Promise<IVinylForRequest> {
         const vinyl: IVinylForRequest | void = await this.vinylService.getVinylById(
@@ -69,6 +73,8 @@ export class VinylsController {
         return vinyl;
     }
 
+    @ApiResponse({status:201, description:"Admin  create  new vinyl"})
+    @ApiResponse({status:401, description:"if invalid jwt credentials"})
     @Roles(Role.ADMIN)
     @UseInterceptors(ParseJWTInterceptor)
     @UseGuards(isTokenGuard, JwtAuthGuard, RoleGuard)
@@ -82,6 +88,10 @@ export class VinylsController {
         return vinyl;
     }
 
+    @ApiResponse({status:201, description:"authorized user  create  review"})
+    @ApiResponse({status:400, description:"if vinyl with this id doesn't exist"})
+    @ApiResponse({status:401, description:"if invalid jwt credentials"})
+    @ApiResponse({status:403, description:"if profile role isn't admin"})
     @UseInterceptors(ParseJWTInterceptor)
     @UseGuards(isTokenGuard, JwtAuthGuard)
     @Post(':id/reviews')
@@ -108,6 +118,9 @@ export class VinylsController {
         }
     }
 
+    @ApiResponse({status:201, description:"authorized user  buy  vinyl"})
+    @ApiResponse({status:400, description:"if vinyl with this id doesn't exist"})
+    @ApiResponse({status:401, description:"if invalid jwt credentials"})
     @UseInterceptors(ParseJWTInterceptor)
     @UseGuards(isTokenGuard, JwtAuthGuard)
     @Post(':id/buy-vinyl')
@@ -127,59 +140,11 @@ export class VinylsController {
             const profile: ProfileDocument | null =
                 await this.profileService.getProfileByEmail(email);
             const vinyl: VinylDocument = await this.vinylService.getVinylById(vinylId);
-            const stripe = new Stripe(this.configService.get("STRIPE_KEY") || "no", {
-                apiVersion: '2020-08-27',
-            });
-            const customer: Stripe.Customer = await stripe.customers.create({
-                email: email,
-                payment_method: paymentDto.payment_method,
-
-            });
-            try {
-                const paymentMethod: Stripe.PaymentMethod = await stripe.paymentMethods.create(
-                    {
-                        type: 'card',
-                        card: {
-                            number: paymentDto.number,
-                            exp_month: +paymentDto.exp_month,
-                            exp_year: +paymentDto.exp_year,
-                            cvc: paymentDto.cvc,
-                        },
-                    }
-                );
-                const product: Stripe.Product = await stripe.products.create(
-                    {name: 'Gold Special'}
-                );
-                const price = await stripe.prices.create(
-                    {
-                        unit_amount: +vinyl.price * 100,
-                        currency: 'eur',
-                        recurring: {interval: 'month'},
-                        product: product.id,
-                    }
-                );
-                const attachPaymentToCustomer: Stripe.PaymentMethod = await stripe.paymentMethods.attach(
-                    paymentMethod.id,
-                    {customer: customer.id}
-                );
-                const updateCustomerDefaultPaymentMethod: Stripe.Customer = await stripe.customers.update(
-                    customer.id, {
-
-                        invoice_settings: {
-                            default_payment_method: paymentMethod.id,
-                        },
-                    });
-                const newSubscription = await stripe.subscriptions.create({
-                    customer: customer.id,
-                    items: [{plan: price.id, quantity: 1}],
-                    default_payment_method: paymentMethod.id,
-                });
-
-            } catch (e) {
-                // @ts-ignore
-                throw new BadRequestException(e.message);
+            const stripeKey: string | undefined = this.configService.get("STRIPE_KEY");
+            if (stripeKey) {
+                await buyWithStripe(email, paymentDto, stripeKey, +vinyl.price)
             }
-            await this.notificationService.sentNotification(email, "Your payment was provided")
+            await this.notificationService.sentNotification(email, "Your payment was provided");
             const updatedProfile: ProfileForRequest =
                 await this.profileService.buyVynil(profile?.id, {
                     id: vinylId,

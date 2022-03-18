@@ -43,13 +43,16 @@ export class ProfileRepository implements IProfileRepository {
         const user: ProfileDocument | null = await this.profileModel.findOne({email});
         return user;
     }
+    async deleteProfile(id: string): Promise<void> {
+        await this.profileModel.deleteOne({id});
+    }
 
     async updateProfile(
         id: string,
         newData: IProfileCreateDtoForUpdate,
         avatar?: Buffer
     ): Promise<void> {
-        await this.profileModel.updateOne({id}, newData, avatar);
+        await this.profileModel.updateOne({id}, {...newData, avatar});
     }
 
     async addReview(id: string, review: IReview): Promise<void> {

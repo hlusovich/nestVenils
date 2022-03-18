@@ -6,7 +6,6 @@ import {MongooseModule} from '@nestjs/mongoose';
 import {ProfileSchema, Profile} from '../schemas/profile.schema';
 import {ConfigModule} from '@nestjs/config';
 import {RoleGuard} from '../guards/RoleGuard';
-import {NotificationModule} from "../notification/notification.module";
 
 @Module({
     imports: [

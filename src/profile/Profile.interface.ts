@@ -34,6 +34,7 @@ export interface IProfileCreateDtoWithSSO {
 }
 
 export interface IRequestUserWithSSO {
+    authorization: string;
     user: {
         firstName: string;
         lastName: string;
@@ -58,6 +59,7 @@ export interface IProfileCreateDtoForUpdate {
     firstName?: string;
     lastName?: string;
     email?: string;
+    avatar?:string;
 }
 
 export interface IProfileService {

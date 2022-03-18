@@ -8,9 +8,9 @@ import { ProfileModule } from './profile/profile.module';
 import { VinylsModule } from './vinyls/vinyls.module';
 import { GoogleStrategy } from './google/google.strategy';
 import { GoogleModule } from './google/google.module';
-import {StripePaymentModule} from "./stripe/stripe.module";
 
-const config = (): {
+
+export const config = (): {
   port: string | undefined;
   jwtSecret: string | undefined;
 } => {
@@ -29,7 +29,6 @@ const config = (): {
     ProfileModule,
     VinylsModule,
     GoogleModule,
-    StripePaymentModule
   ],
   controllers: [],
   providers: [GoogleStrategy],

@@ -8,16 +8,18 @@ import {
     mockProfileReporistory, profiles, removeProfiles,
     testProfile1,
     testProfile2
-} from "../../profile/dto/tests/profile.mocks";
+} from "../../profile/tests/profile.mocks";
 import {VinylsRepository} from "../vinyls.repostitory";
 import {VinylsService} from "../vinyls.service";
 import {NotificationService} from "../../notification/notification.service";
 import {mockNotificationService} from "../../notification/tests/notifications.mock";
 import {mockVinylReporistory, removeVinyls, testVinyl1, testVinyl2, vinyls} from "./mocks";
 import {ProfileForRequest} from "../../profile/Profile.interface";
+import {INestApplication} from "@nestjs/common";
 
 
-describe("ProfileService", () => {
+describe("VinylsService", () => {
+    let app: INestApplication;
     beforeAll(() => {
         vinyls.push(testVinyl1);
         vinyls.push(testVinyl2);
@@ -30,6 +32,7 @@ describe("ProfileService", () => {
     });
     let vinylService: VinylsService;
     let profileService: ProfileService;
+    let notificationService: NotificationService;
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [VinylsService, VinylsRepository, ProfileService, ProfileRepository, NotificationService]
@@ -37,11 +40,20 @@ describe("ProfileService", () => {
             .overrideProvider(VinylsRepository).useValue(mockVinylReporistory)
             .overrideProvider(NotificationService).useValue(mockNotificationService)
             .compile();
+        app = module.createNestApplication();
+        await app.init();
         vinylService = module.get<VinylsService>(VinylsService);
         profileService = module.get<ProfileService>(ProfileService);
+        notificationService = module.get<NotificationService>(NotificationService);
     });
     it("VinylService should be defined", () => {
         expect(vinylService).toBeDefined()
+    });
+    it("NotificationService should be defined", () => {
+        expect(notificationService).toBeDefined()
+    });
+    it("profileService should be defined", () => {
+        expect(profileService).toBeDefined()
     });
     it("VinylService should return all vinyls", async () => {
         const vinyls: IVinyl[] = await vinylService.getAllVinyls();
@@ -56,10 +68,12 @@ describe("ProfileService", () => {
         };
         const vinyl: IVinyl = await vinylService.saveVinyl(vinylDto);
         expect(vinyl.author).toBe(vinylDto.author);
+        expect(mockVinylReporistory.saveVinyl).toHaveBeenCalledTimes(1);
     });
     it("VinylService should return vinyl by id", async () => {
         const vinyl: IVinyl = await vinylService.getVinylById(testVinyl1.id);
         expect(vinyl.price).toBe(testVinyl1.price);
+        expect(mockVinylReporistory.getVinylById).toHaveBeenCalledWith(testVinyl1.id);
     });
     it("VinylService should return error if vinyl doesn't exist", async () => {
         const incorrectId: string = v4();
@@ -76,6 +90,7 @@ describe("ProfileService", () => {
             vinylScore: "5",
         };
         await vinylService.addVinylsReview(testVinyl1.id, testProfile1.id, reviewDto);
+        expect(mockVinylReporistory.addVinylsReview).toHaveBeenCalledTimes(1);
         const profile: ProfileForRequest | void = await profileService.getProfileById(testProfile1.id);
         const vinyl: IVinyl | undefined = await vinylService.getVinylById(testVinyl1.id);
         expect(profile?.reviews.length).toBe(1);
@@ -105,11 +120,16 @@ describe("ProfileService", () => {
         } catch (e) {
             // @ts-ignore
             expect(e.status).toBe(400);
+            expect(mockVinylReporistory.addVinylsReview).toHaveBeenCalledTimes(2);
         }
     });
-    it("VinylService should return vinyl by id", async () => {
+    it("VinylService should add bought vinyl", async () => {
         const profile: ProfileForRequest = await vinylService.addBoughtVynil(testProfile1.id, testVinyl1.id);
+        expect(mockProfileReporistory.buyVinyl).toHaveBeenCalledWith(testProfile1.id, {name:testVinyl1.name, id:testVinyl1.id});
         expect(profile.boughtedVinyls.find(vinyl=> vinyl.id=== testVinyl1.id)?.name).toBe(testVinyl1.name);
+    });
+    afterAll(async () => {
+        await app.close();
     });
 });
 

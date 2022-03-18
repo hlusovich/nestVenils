@@ -18,12 +18,15 @@ import {Express} from 'express';
 import {ParseJWTInterceptor} from "../interceptors/parseJWT.interceptor";
 import {JwtAuthGuard} from "../guards/jwt-auth.guard";
 import {isTokenGuard} from "../guards/isTokenGuard";
+import {ApiResponse, ApiTags} from "@nestjs/swagger";
 
+@ApiTags("Profiles")
 @Controller('api/profiles/')
 export class ProfileController {
     constructor(private profileService: ProfileService) {
     }
 
+    @ApiResponse({status:200, description:"get all users"})
     @Get()
     async getAll(): Promise<ProfileForRequest[]> {
         const users: ProfileForRequest[] =
@@ -31,6 +34,9 @@ export class ProfileController {
         return users;
     }
 
+    @ApiResponse({status:200, description:"authorized user get all information about him"})
+    @ApiResponse({status:400, description:"if profile with this id doesn't exist"})
+    @ApiResponse({status:401, description:"if invalid jwt credentials"})
     @UseInterceptors(ParseJWTInterceptor)
     @UseGuards(isTokenGuard, JwtAuthGuard)
     @Get(':id')
@@ -48,6 +54,9 @@ export class ProfileController {
         return profile;
     }
 
+    @ApiResponse({status:200, description:"authorized user update his profile"})
+    @ApiResponse({status:400, description:"if profile with this id doesn't exist"})
+    @ApiResponse({status:401, description:"if invalid jwt credentials"})
     @UseInterceptors(ParseJWTInterceptor)
     @UseGuards(isTokenGuard, JwtAuthGuard)
     @UseInterceptors(FileInterceptor('file'))

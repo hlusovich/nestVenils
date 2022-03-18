@@ -1,8 +1,8 @@
-import {IProfile, IProfileCreateDto, IProfileCreateDtoForUpdate} from "../../Profile.interface";
+import {IProfile, IProfileCreateDto, IProfileCreateDtoForUpdate} from "../Profile.interface";
 import {v4} from "uuid";
-import {IReview} from "../../../reviews/review.interfaces";
-import {IBoughtedVinyl} from "../../../boughtedVinyls/boughtedVinyl.interfaces";
-import {Role} from "../../../models/role.enum";
+import {IReview} from "../../reviews/review.interfaces";
+import {IBoughtedVinyl} from "../../boughtedVinyls/boughtedVinyl.interfaces";
+import {Role} from "../../models/role.enum";
 
 export const testProfile1: IProfile = {
     id: v4(),
