@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { VinylSchema, Vinyl } from '../schemas/vinyls.schema';
 import { VinylsRepository } from './vinyls.repostitory';
 import { ProfileModule } from '../profile/profile.module';
-import {NotificationService} from "../notification/notification.service";
+import { NotificationService } from '../notification/notification.service';
 
 @Module({
   imports: [

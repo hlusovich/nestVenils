@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 import { IReviewCreateDto } from '../review.interfaces';
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ReviewCreateDto implements IReviewCreateDto {
   @ApiProperty()

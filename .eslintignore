@@ -5,3 +5,4 @@ PostgressDocker/
 build/
 doc/
 migration/
+*.spec.ts

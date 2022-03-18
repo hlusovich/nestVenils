@@ -2,7 +2,7 @@ import { IProfileCreateDto } from '../Profile.interface';
 import { IsEmail, IsString, Validate } from 'class-validator';
 
 import { CustomDateValidator } from '../../validators/dateValidator';
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ProfileCreateDto implements IProfileCreateDto {
   @ApiProperty()

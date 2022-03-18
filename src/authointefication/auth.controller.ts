@@ -16,9 +16,9 @@ import { ProfileDocument } from '../schemas/profile.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import { Token } from './auth.interface';
-import {ApiResponse, ApiTags} from "@nestjs/swagger";
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@ApiTags("Auth")
+@ApiTags('Auth')
 @Controller('api/auth/')
 export class AuthController {
   constructor(
@@ -26,8 +26,11 @@ export class AuthController {
     private profileService: ProfileService
   ) {}
 
-  @ApiResponse({status:201, description:"login"})
-  @ApiResponse({status:400, description:"if profile has already been exsisted"})
+  @ApiResponse({ status: 201, description: 'login' })
+  @ApiResponse({
+    status: 400,
+    description: 'if profile has already been exsisted',
+  })
   @Post('login')
   async login(
     @Body(
@@ -47,7 +50,7 @@ export class AuthController {
     return token;
   }
 
-  @ApiResponse({status:201, description:"create new user"})
+  @ApiResponse({ status: 201, description: 'create new user' })
   @UseInterceptors(FileInterceptor('avatar'))
   @Post('registration')
   async register(

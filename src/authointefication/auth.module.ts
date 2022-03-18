@@ -7,7 +7,6 @@ import { AuthController } from './auth.controller';
 import { JwtModuleConfigAsync } from './jwtAsyncConfig';
 import { ProfileModule } from '../Profile/profile.module';
 
-
 @Module({
   imports: [
     PassportModule,

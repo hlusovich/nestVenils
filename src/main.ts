@@ -9,10 +9,10 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 export async function bootstrap(): Promise<INestApplication> {
   const app: INestApplication = await NestFactory.create(AppModule);
   const swaggerConfig = new DocumentBuilder()
-      .setTitle('Vinyls')
-      .setVersion('1.0')
-      .addTag('vinyls')
-      .build();
+    .setTitle('Vinyls')
+    .setVersion('1.0')
+    .addTag('vinyls')
+    .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('swagger', app, document);
   app.useGlobalFilters(new HttpExceptionFilter());

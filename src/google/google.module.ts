@@ -6,10 +6,7 @@ import { JwtModuleConfigAsync } from '../authointefication/jwtAsyncConfig';
 import { AuthModule } from '../authointefication/auth.module';
 
 @Module({
-  imports: [
-    AuthModule,
-    JwtModule.registerAsync(JwtModuleConfigAsync),
-  ],
+  imports: [AuthModule, JwtModule.registerAsync(JwtModuleConfigAsync)],
   controllers: [GoogleController],
   providers: [GoogleStrategy],
 })

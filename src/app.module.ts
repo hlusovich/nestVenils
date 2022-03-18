@@ -9,7 +9,6 @@ import { VinylsModule } from './vinyls/vinyls.module';
 import { GoogleStrategy } from './google/google.strategy';
 import { GoogleModule } from './google/google.module';
 
-
 export const config = (): {
   port: string | undefined;
   jwtSecret: string | undefined;
