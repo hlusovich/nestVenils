@@ -18,7 +18,7 @@ async function bootstrap() {
     swagger_1.SwaggerModule.setup('swagger', app, document);
     app.useGlobalFilters(new exceptionFilter_1.HttpExceptionFilter());
     const configService = app.get(config_1.ConfigService);
-    const port = configService.get('PORT') | 5000;
+    const port = configService.get('PORT') || 5000;
     aws_sdk_1.config.update({
         accessKeyId: configService.get('ACCESS_KEY_ID'),
         secretAccessKey: configService.get('SECRET_ACCESS_KEY'),
