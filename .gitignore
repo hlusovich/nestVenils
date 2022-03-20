@@ -1,8 +1,6 @@
 # compiled output
 /dist
 /coverage
-/node_modules
-.env
 
 # Logs
 logs
