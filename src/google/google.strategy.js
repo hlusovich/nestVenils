@@ -21,7 +21,7 @@ let GoogleStrategy = class GoogleStrategy extends (0, passport_1.PassportStrateg
         super({
             clientID: configService.get('CLIENT_ID'),
             clientSecret: configService.get('CLIENT_SECRET'),
-            callbackURL: `http://localhost:${configService.get('PORT') || 5000}/auth/google/callback`,
+            callbackURL: `http://pure-temple-88459.herokuapp.com/auth/google/callback`,
             scope: ['email', 'profile'],
         });
         this.configService = configService;
